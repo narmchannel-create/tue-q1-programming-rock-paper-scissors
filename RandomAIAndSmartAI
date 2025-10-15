@@ -1,0 +1,97 @@
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * Rock–Paper–Scissors Game
+ * Demonstrates Algorithms (Random + Probability-based AI)
+ * 
+ * Uses: OOP, Interfaces, Polymorphism, Swing GUI
+ */
+
+ public class RandomAIAndSmartAI {
+
+   // Fields and Constants
+   private int BORDER_SIZE = 20;
+   private JFrame frame;
+   private JPanel gameBackgroundPanel;
+   private JPanel initialPanel, randomModePanel, endlessTrialPanel;
+   private JLabel titleLabel;
+   private CardLayout cardLayout;
+   
+   // stats
+   private int wins = 0, losses = 0, draws = 0;
+
+   // AI
+   private RpsAI ai = new RandomAI(); // default AI
+   private JComboBox<String> aiSelect;
+
+   // Define a tiny AI interface
+   interface RpsAI {
+       // Ask the AI for its next move: "Rock", "Paper", or "Scissors"
+       String nextMove();
+
+       // Let the AI learn from the Last round (player + computer moves)
+       default void observe(String playerMove, String aiMove, boolean playerWon) {}
+   }
+
+   // easy AI: purely random
+   class RandomAI implements RpsAI {
+         private final String[] MOVES = {"Rock", "Paper", "Scissors"};
+         public String nextMove() {
+                int i = ThreadLocalRandom.current().nextInt(0, MOVES.length);
+                return MOVES[i];         
+         }
+   }
+
+   // smart AI: probability-based(frequency analysis)
+   class SmartAI implements RpsAI {
+            private int rockCount = 0, paperCount = 0, scissorscount = 0;
+
+            @Override
+            public String nextMove() {
+                // Predict player's next move based on historical frequency
+                int total = rockCount + paperCount + scissorscount;
+                if (total == 0) 
+                    // No history yet, choose randomly
+                    return new RandomAI().nextMove();
+                if (rockCount >= paperCount && rockCount >= scissorscount) 
+                    // Player favors Rock, so AI choose Paper
+                    return "Paper";
+                else if (paperCount >= rockCount && paperCount >= scissorscount) 
+                    // Player favors Paper, so AI choose Scissors
+                    return "Scissors";
+                else 
+                    // Player favors Scissors, so AI choose Rock
+                    return "Rock";
+                }
+            
+            @Override
+            public void observe(String playerMove, String aiMove, boolean playerWon) {
+                // Update counts based on player's last move
+                switch (playerMove) {
+                    case "Rock" -> rockCount++;
+                    case "Paper" -> paperCount++;
+                    case "Scissors" -> scissorscount++;
+                }
+            }
+   }
+
+   // Utility for determining the result
+   private int result(String player, String computer) {
+         if (player.equals(computer)) return 0;
+        return switch (player) {
+            case "Rock" -> computer.equals("Scissors") ? +1 : -1;
+            case "Paper" -> computer.equals("Rock") ? +1 : -1;
+            case "Scissors" -> computer.equals("Paper") ? +1 : -1;
+            default -> 0;
+        }
+   }
+
+   // Constructor
+   public Game() {}
+
+   // Main play method
+   public void play() {}
+

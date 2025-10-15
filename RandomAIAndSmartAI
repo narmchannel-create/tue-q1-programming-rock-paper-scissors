@@ -1,0 +1,80 @@
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * Rock–Paper–Scissors Game
+ * Demonstrates Algorithms (Random + Probability-based AI)
+ * 
+ * Uses: OOP, Interfaces, Polymorphism, Swing GUI
+ */
+
+public class RandomAIAndSmartAI {
+    // Active AI
+    private RpsAI ai;
+
+    // Define a tiny AI interface
+    interface RpsAI {
+        // Ask the AI for its next move: "Rock", "Paper", or "Scissors"
+        String nextMove();
+
+        // Let the AI learn from the Last round (player + computer moves)
+        default void observe(String playerMove, String aiMove, boolean playerWon) {}
+    }
+
+    // easy AI: purely random
+    class RandomAI implements RpsAI {
+        
+        private final String[] MOVES = {"Rock", "Paper", "Scissors"};
+        
+        public String nextMove() {
+            int i = ThreadLocalRandom.current().nextInt(MOVES.length);
+            return MOVES[i];         
+        }
+    }
+
+    // smart AI: probability-based(frequency analysis)
+    class SmartAI implements RpsAI {
+        private int rockCount = 0;
+        private int paperCount = 0;
+        private int scissorsCount = 0;
+
+        @Override
+            public String nextMove() {
+            // Predict player's next move based on historical frequency
+            int total = rockCount + paperCount + scissorsCount;
+            if (total == 0) {
+                return new RandomAI().nextMove();
+            }
+            if (rockCount >= paperCount && rockCount >= scissorsCount) {
+                return "Paper"; // counter Rock
+            } else if (paperCount >= scissorsCount && paperCount >= rockCount) {
+                return "Scissors"; // counter Paper
+            } else {
+                return "Rock"; // counter Scissors
+            }
+        }
+
+            
+        @Override
+            public void observe(String playerMove, String aiMove, boolean playerWon) {
+            // Update counts based on player's last move
+            switch (playerMove) {
+                case "Rock" -> rockCount++;
+                case "Paper" -> paperCount++;
+                case "Scissors" -> scissorsCount++;
+            }
+        }
+    }
+
+    // Utility for determining the result
+    private int result(String player, String computer) {
+        if (player.equals(computer)) {
+            return 0;
+        }
+        return switch (player) {
+            case "Rock" -> computer.equals("Scissors") ? +1 : -1;
+            case "Paper" -> computer.equals("Rock") ? +1 : -1;
+            case "Scissors" -> computer.equals("Paper") ? +1 : -1;
+            default -> 0;
+        };
+    }
+}
